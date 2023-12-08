@@ -1,5 +1,6 @@
 package AOC2023;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,15 +19,23 @@ public class day08 {
         char[] directions = input.get(0).toCharArray();
         HashMap<String, String[]> map = parseMap(input);
 
-        return countSteps1(map, directions);
+        return loopLength(map, directions, "AAA");
     }
 
-    static int part2(ArrayList<String> input) {
+    static BigInteger part2(ArrayList<String> input) {
         char[] directions = input.get(0).toCharArray();
         HashMap<String, String[]> map = parseMap(input);
+        ArrayList<String> startNodes = findStartNodes(map);
 
-        return countSteps2(map, directions);
+        int[] loopLengths = new int[startNodes.size()];
+
+        for (int i = 0; i < startNodes.size(); i++) {
+            loopLengths[i] = loopLength(map, directions, startNodes.get(i));
+        }
+
+        return lcm(loopLengths);
     }
+
 
 
     static HashMap<String, String[]> parseMap(ArrayList<String> input) {
@@ -39,63 +48,6 @@ public class day08 {
             map.put(node, nextNode);
         }
         return map;
-    }
-
-    static int countSteps1(HashMap<String, String[]> map, char[] directions) {
-        final String START_NODE = "AAA";
-        final String END_NODE = "ZZZ";
-        int steps = 0;
-
-        String currentNode = START_NODE;
-        int dirIndex = 0;
-        while (!currentNode.equals(END_NODE)) {
-            String[] nextNode = map.get(currentNode);
-            switch (directions[dirIndex]) {
-                case 'L':
-                    currentNode = nextNode[0];
-                    break;
-                case 'R':
-                    currentNode = nextNode[1];
-                    break;
-            }
-            dirIndex = (dirIndex + 1) % directions.length;
-            steps++;
-        }
-        return steps;
-    }
-
-    static int countSteps2(HashMap<String, String[]> map, char[] directions) {
-        ArrayList<String> startNodes = findStartNodes(map);
-        boolean[] finishedNodes = new boolean[startNodes.size()];
-        int steps = 0;
-
-        int dirIndex = 0;
-        while (true) {
-            for (int i = 0; i < startNodes.size(); i++) {
-                String[] nextNode = map.get(startNodes.get(i));
-                switch (directions[dirIndex]) {
-                    case 'L':
-                        startNodes.set(i, nextNode[0]);
-                        break;
-                    case 'R':
-                        startNodes.set(i, nextNode[1]);
-                        break;
-                }
-                if (startNodes.get(i).charAt(2) == 'Z') {
-                    finishedNodes[i] = true;
-                }
-                else {
-                    finishedNodes[i] = false;
-                }
-            }
-            dirIndex = (dirIndex + 1) % directions.length;
-            steps++;
-
-            if (allBoolTrue(finishedNodes)) {
-                break;
-            }
-        }
-        return steps;
     }
 
     static ArrayList<String> findStartNodes(HashMap<String, String[]> map) {
@@ -117,4 +69,64 @@ public class day08 {
         return true;
     }
 
+    static int loopLength(HashMap<String, String[]> map, char[] directions, String startNode) {
+        int length = 0;
+
+        int dirIndex = 0;
+        String currentNode = startNode;
+        while (true) {
+            String[] nextNode = map.get(currentNode);
+            switch (directions[dirIndex]) {
+                case 'L':
+                    currentNode = nextNode[0];
+                    break;
+                case 'R':
+                    currentNode = nextNode[1];
+                    break;
+            }
+            dirIndex = (dirIndex + 1) % directions.length;
+            length++;
+            
+            if (currentNode.charAt(2) == 'Z') {
+                break;
+            }
+        }
+        return length;
+    }
+
+
+
+    static BigInteger lcm(int[] numbers) {
+        BigInteger[] products = new BigInteger[numbers.length];
+        for (int i = 0; i < numbers.length; i++) {
+            BigInteger product = BigInteger.ONE;
+            for (int j = 0; j < numbers.length; j++) {
+                if (i != j) {
+                    product = product.multiply(BigInteger.valueOf(numbers[j]));
+                }
+            }
+            products[i] = product;
+        }
+        
+        BigInteger gcd = products[0];
+        for (int i = 1; i < products.length; i++) {
+            gcd = gcd(gcd, products[i]);
+            if (gcd.equals(BigInteger.ONE)) {
+                break;
+            }
+        }
+        
+        BigInteger lcm = (products[0].multiply(BigInteger.valueOf(numbers[0]))).divide(gcd);
+        return lcm;
+    }
+    
+    static BigInteger gcd(BigInteger a, BigInteger b) {
+        BigInteger t;
+        while (!b.equals(BigInteger.ZERO)) {
+            t = b;
+            b = a.mod(b);
+            a = t;
+        }
+        return a;
+    }
 }
