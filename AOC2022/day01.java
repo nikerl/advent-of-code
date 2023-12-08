@@ -1,3 +1,5 @@
+package AOC2022;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -12,7 +14,7 @@ public class day01 {
     }
 
     
-
+    
    //---------------------------- PART 1 ----------------------------//
 
     static int findMaxCals() {

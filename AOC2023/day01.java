@@ -1,9 +1,12 @@
-import java.lang.reflect.Array;
+package AOC2023;
+
+import AOC2023.libraries.Functions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 
 public class day01 {

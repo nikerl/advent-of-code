@@ -1,3 +1,5 @@
+package AOC2022;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;

@@ -1,3 +1,6 @@
+package AOC2023;
+
+import AOC2023.libraries.Functions;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-//package AOC2023.libraries;
+package AOC2023.libraries;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,7 +27,7 @@ public class Functions {
         return textArr;
     }
     
-    static ArrayList<String> split(String input, char delimiter) {
+    public static ArrayList<String> split(String input, char delimiter) {
         ArrayList<String> output = new ArrayList<String>();
 
         for (int i = 0; i < input.length(); i++) {

@@ -1,3 +1,5 @@
+package AOC2022;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -39,6 +41,7 @@ public class day15 {
             int sensorX = Integer.parseInt(points[2].substring(2, points[2].length()-1));
             int sensorY = Integer.parseInt(points[3].substring(2, points[3].length()-1));
             Point sensor = new Point(sensorX, sensorY);
+            System.out.println(sensor);
             
         }
 

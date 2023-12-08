@@ -1,13 +1,14 @@
+package AOC2022;
+
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.lang.reflect.Array;
 import java.util.Scanner;
 import java.util.ArrayList;
 
 public class day13 {
     public static void main(String[] args) {
         ArrayList<String> packets = readInputFile();
-
+        System.out.println(packets);
 
 
     }
@@ -42,6 +43,7 @@ public class day13 {
         for (int i = 0; i < inputs.length; i++) {
             String input = inputs[i];
             ArrayList<ArrayList<Integer>> packet = pair.packets.get(i);
+            System.out.println(packet);
             int arrayIndex = 0;
 
             for (int j = 0; j < input.length(); j++) {
@@ -67,14 +69,16 @@ public class day13 {
     static void comparePackets(ArrayList<String> packets, ArrayList<Integer> indices) {
         int i = 0;
         int pairIndex = 1;
+
         while (i < packets.size()) {
             String left = packets.get(i);
             String right = packets.get(i + 1);
             Pair pair = parsePair(new String[] {left, right});
             for (int j = 0; j < packets.get(i).length(); j++) {
-
+                System.out.println(pair);
             }
         }
+        System.out.println(pairIndex);
     }
 
 
@@ -88,6 +92,7 @@ public class day13 {
 
     static void parser(ArrayList<String> inputs) {
         ArrayList<PacketPair> packets = new ArrayList<>();
+        System.out.println(packets);
         for (int pairIndex = 0; pairIndex < 2; pairIndex++) {
             for (int i = 0; i < inputs.size(); i++) {
                 String input = inputs.get(i);
@@ -97,7 +102,7 @@ public class day13 {
                 for (int j = 0; j < input.length(); j++) {
                     char c = input.charAt(j);
                     if (c == '[') {
-                        //packet.pair.get(pairIndex).get(arrayIndex).add(new ArrayList<Integer>());
+                        packet.pair.get(pairIndex).get(arrayIndex);
                     }
                 }
             }
