@@ -1,11 +1,9 @@
 package AOC2023;
 
+import AOC2023.libraries.Functions;
 import java.math.BigInteger;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import AOC2023.libraries.Functions;
 
 public class day08 {
     public static void main(String[] args) {
