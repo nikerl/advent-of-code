@@ -1,90 +1,75 @@
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <string>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
-#include <iostream>
-#include <string>
-#include <vector>
 #include <sstream>
 
 using namespace std;
 
-vector<unsigned long long> parseInput() {
+vector<string> parseInput() {
     ifstream file("/home/nikerl/Documents/Repos/advent-of-code/AOC2024/input/day11_input.txt");
     string str;
     getline(file, str);
 
-    vector<unsigned long long> result;
+    vector<string> result;
     stringstream ss (str);
     string item;
     while (getline (ss, item, ' ')) {
-        result.push_back(stoull(item));
+        result.push_back(item);
     }
 
     return result;
 }
 
-int getNumDigits(unsigned long long stone) {
-    int numDigits = 0;
-    while (stone > 0) {
-        stone /= 10;
-        numDigits++;
+
+// Function to split the number into left and right halves
+void splitNumber(const string& num, string& left, string& right) {
+    int len = num.length();
+    int mid = len / 2;
+    left = num.substr(0, mid);
+    right = num.substr(mid);
+    // Remove leading zeros
+    while (left.length() > 1 && left[0] == '0') left.erase(0, 1);
+    while (right.length() > 1 && right[0] == '0') right.erase(0, 1);
+}
+
+// Memoization cache
+unordered_map<string, long long> memo;
+
+// Recursive function to compute the number of stones after N blinks
+long long countStones(int N, const string& num) {
+    if (N == 0) return 1;
+    string key = to_string(N) + "_" + num;
+    if (memo.find(key) != memo.end()) return memo[key];
+
+    if (num == "0") {
+        // Rule 1
+        memo[key] = countStones(N - 1, "1");
+    } else if (num.length() % 2 == 0) {
+        // Rule 2
+        string left, right;
+        splitNumber(num, left, right);
+        memo[key] = countStones(N - 1, left) + countStones(N - 1, right);
+    } else {
+        // Rule 3
+        // Multiply num by 2024
+        string product = to_string(stoll(num) * 2024);
+        memo[key] = countStones(N - 1, product);
     }
-    return numDigits;
+    return memo[key];
 }
-
-
-void updateStones(vector<unsigned long long> *stones) {
-    for (int j = 0; j < stones->size(); j++) {
-            unsigned long long stone = stones->at(j);
-            if (stone == 0) {
-                stones->at(j) = 1;
-            } else if (getNumDigits(stone) % 2 == 0) {
-                int numDigits = getNumDigits(stone);
-                int modifier = 1;
-                for (int k = 0; k < numDigits / 2; k++) {
-                    modifier *= 10;
-                }
-                unsigned long long leftStone = stone / modifier;
-                unsigned long long rightStone = stone % modifier;
-
-                stones->at(j) = leftStone;
-                stones->insert(stones->begin() + j + 1, rightStone);
-                j++;
-            } else {
-                stones->at(j) = stone * 2024;
-            }
-        }
-}
-
-int part1(vector<unsigned long long> stones) {
-    for (int i = 0; i < 25; i++) {
-        updateStones(&stones);
-    }
-    int numStones = stones.size();
-    
-    cout << "Part 1 result: " << numStones << endl;
-    
-    return 0;
-}
-
-int part2(vector<unsigned long long> stones) {
-    for (int i = 0; i < 75; i++) {
-        updateStones(&stones);
-    }
-    int numStones = stones.size();
-    
-    cout << "Part 1 result: " << numStones << endl;
-    
-    return 0;
-}
-
 
 int main() {
-    vector<unsigned long long> stones = parseInput();
-    part1(stones);
-    part2(stones);
-
+    int N = 75;
+    vector<string> initialStones = parseInput();
+    long long totalStones = 0;
+    for (const auto& stone : initialStones) {
+        totalStones += countStones(N, stone);
+    }
+    cout << "Total stones after " << N << " blinks: " << totalStones << endl;
     return 0;
-
 }
