@@ -147,6 +147,35 @@ int findNumPeaks(vector<vector<int>> topologyMap, coords trailHead) {
     return numPeaks;
 }
 
+int findTrailRating(vector<vector<int>> topologyMap, coords trailHead) {
+    int rating = 0;
+    vector<coords> unexplored;
+    vector<coords> peaks;
+    vector<coords> currentOptions;
+    coords currentCoord = trailHead;
+
+    unexplored.push_back(currentCoord);
+
+    while (!unexplored.empty()) {
+        currentCoord = unexplored.back();
+        unexplored.pop_back();
+
+        int currentCoordHeight = topologyMap[currentCoord.y][currentCoord.x];
+        vector<coords> placeholder;
+        currentOptions = getCurrentOptions(currentCoord, &placeholder, &topologyMap);
+
+        if (currentCoordHeight == 9) {
+            peaks.push_back(currentCoord);
+            rating++;
+        } else if (!currentOptions.empty()) {
+            unexplored.insert(unexplored.end(), currentOptions.begin(), currentOptions.end());
+            currentOptions.clear();
+        }
+    }
+
+    return rating;
+}
+
 int part1(vector<string> input) {
     int sum = 0;
     vector<vector<int>> topologyMap = parseMap(&input);
@@ -160,9 +189,23 @@ int part1(vector<string> input) {
     return 0;
 }
 
+int part2(vector<string> input) {
+    int sum = 0;
+    vector<vector<int>> topologyMap = parseMap(&input);
+    vector<coords> trailHeads = findTrailHeads(&topologyMap);
+    for (int i = 0; i < trailHeads.size(); i++) {
+        sum += findTrailRating(topologyMap, trailHeads.at(i));
+    }
+
+    cout << "Part 2 result: " << sum << endl;
+
+    return 0;
+}
+
 int main() {
     vector<string> input = readFile("/home/nikerl/Documents/Repos/advent-of-code/AOC2024/input/day10_input.txt");
     part1(input);
+    part2(input);
 
     return 0;
 }
