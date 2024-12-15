@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <ostream>
-#include <set>
+#include <unordered_set>
 #include <string>
 #include <vector>
 
@@ -12,16 +12,20 @@ struct coords {
     int y;
     char dir;
 
-    // Overload operator<
-    bool operator<(const coords& other) const {
-        if (x != other.x)
-            return x < other.x;
-        else if (y != other.y)
-            return y < other.y;
-        else
-            return dir < other.dir;
+    bool operator==(const coords& other) const {
+        return x == other.x && y == other.y && dir == other.dir;
     }
 };
+
+// Hash function for coords
+namespace std {
+    template <>
+    struct hash<coords> {
+        size_t operator()(const coords& state) const {
+            return ((hash<int>()(state.x) ^ (hash<int>()(state.y) << 1)) >> 1) ^ (hash<char>()(state.dir) << 1);
+        }
+    };
+}
 
 vector<string> readFile(string path) {
     ifstream file(path);
@@ -45,44 +49,30 @@ coords getGuardStartCoords(vector<string> *map) {
         for (int j = 0; j < map->at(i).length(); j++) {
             char pos = map->at(i)[j];
             if (pos == '^' || pos == 'v' || pos == '<' || pos == '>') {
-                return {j, i};
+                return {j, i, pos};
             }
         }
     }
     return {-1, -1};
 }
 
-bool guardGoingOffMap(vector<string> *map, coords *guardCoords) {
-    char guardDir = map->at(guardCoords->y)[guardCoords->x];
+bool guardGoingOffMap(const vector<string>& map, coords guardCoords) {
+    int x = guardCoords.x;
+    int y = guardCoords.y;
+    char dir = guardCoords.dir;
 
-    switch (guardDir) {
-        case '^':
-            if (guardCoords->y == 0) {
-                map->at(guardCoords->y)[guardCoords->x] = 'X';
-                return true;
-            }
-            break;
-        case '>':
-            if (guardCoords->x == map->at(0).length() - 1) {
-                map->at(guardCoords->y)[guardCoords->x] = 'X';
-                return true;
-            }
-            break;
-        case 'v':
-            if (guardCoords->y == map->size() - 1) {
-                map->at(guardCoords->y)[guardCoords->x] = 'X';
-                return true;
-            }
-            break;
-        case '<':
-            if (guardCoords->x == 0) {
-                map->at(guardCoords->y)[guardCoords->x] = 'X';
-                return true;
-            }
-            break;
+    int dx = 0, dy = 0;
+    switch (dir) {
+        case '^': dy = -1; break;
+        case '>': dx = 1;  break;
+        case 'v': dy = 1;  break;
+        case '<': dx = -1; break;
     }
 
-    return false;
+    int nx = x + dx;
+    int ny = y + dy;
+
+    return (ny < 0 || ny >= map.size() || nx < 0 || nx >= map[0].size());
 }
 
 int moveGuard(vector<string> *map, coords *guardCoords) {
@@ -130,6 +120,43 @@ int moveGuard(vector<string> *map, coords *guardCoords) {
     return 0;
 }
 
+coords moveGuard2(const vector<string>& map, coords guardCoords) {
+    int x = guardCoords.x;
+    int y = guardCoords.y;
+    char dir = guardCoords.dir;
+
+    int dx = 0, dy = 0;
+    char newDir = dir;
+
+    // Determine movement based on direction
+    switch (dir) {
+        case '^': dy = -1; break;
+        case '>': dx = 1;  break;
+        case 'v': dy = 1;  break;
+        case '<': dx = -1; break;
+    }
+
+    // Check the position directly in front
+    int nx = x + dx;
+    int ny = y + dy;
+
+    if (ny < 0 || ny >= map.size() || nx < 0 || nx >= map[0].size() || map[ny][nx] == '#') {
+        // Obstacle found, turn right
+        switch (dir) {
+            case '^': newDir = '>'; break;
+            case '>': newDir = 'v'; break;
+            case 'v': newDir = '<'; break;
+            case '<': newDir = '^'; break;
+        }
+    } else {
+        // Move forward
+        x = nx;
+        y = ny;
+    }
+
+    return {x, y, newDir};
+}
+
 vector<coords> getListOfVisitedCoords(vector<string> *map) {
     vector<coords> visitedCoords;
     for (int i = 0; i < map->size(); i++) {
@@ -143,11 +170,29 @@ vector<coords> getListOfVisitedCoords(vector<string> *map) {
     return visitedCoords;
 }
 
+bool detectLoop(const vector<string>& map, coords guardCoords) {
+    unordered_set<coords> visitedStates;
 
+    while (true) {
+        if (visitedStates.count(guardCoords)) {
+            // Loop detected
+            return true;
+        }
+        visitedStates.insert(guardCoords);
+
+        if (guardGoingOffMap(map, guardCoords)) {
+            // Guard leaves the map
+            return false;
+        }
+
+        guardCoords = moveGuard2(map, guardCoords);
+    }
+    return false;
+}
 
 vector<coords> part1(vector<string> map) {
     coords guardCoords = getGuardStartCoords(&map);
-    while (!guardGoingOffMap(&map, &guardCoords)) {
+    while (!guardGoingOffMap(map, guardCoords)) {
         moveGuard(&map, &guardCoords);
     }
 
@@ -159,51 +204,32 @@ vector<coords> part1(vector<string> map) {
 }
 
 
-int part2(vector<string> map, vector<coords> oldvisitedCoords) {
-    vector<coords> visitedCoords;
-    for (int i = 0; i < map.size(); i++) {
-        for (int j = 0; j < map.at(i).length(); j++) {
-            visitedCoords.push_back({j, i});
-        }
-    }
-    vector<coords> causesGuardLoop;
-    vector<string> tempMap;
-    for (int i = 0; i < visitedCoords.size(); i++) {
-        tempMap = map;
-        coords guardCoords = getGuardStartCoords(&tempMap);
-        coords obstacleCoords = visitedCoords.at(i);
-        if (guardCoords.x == obstacleCoords.x && guardCoords.y == obstacleCoords.y) {
-            continue;
-        }
-        tempMap.at(visitedCoords[i].y)[visitedCoords[i].x] = '#';
-        set<coords> visitedStates;
-        bool isLooping = false;
+void part2(vector<string> map) {
+    int loopCount = 0;
+    coords guardStart = getGuardStartCoords(&map);
 
-        while (!guardGoingOffMap(&tempMap, &guardCoords)) {
-            char guardDir = tempMap.at(guardCoords.y)[guardCoords.x];
-            coords guardState = {guardCoords.x, guardCoords.y, guardDir};
+    for (int y = 0; y < map.size(); y++) {
+        for (int x = 0; x < map[y].length(); x++) {
+            if (map[y][x] == '.' && !(x == guardStart.x && y == guardStart.y)) {
+                // Place obstruction
+                map[y][x] = '#';
 
-            if (visitedStates.count(guardState)) {
-                isLooping = true;
-                break;
+                if (detectLoop(map, guardStart)) {
+                    loopCount++;
+                }
+
+                // Remove obstruction
+                map[y][x] = '.';
             }
-            visitedStates.insert(guardState);
-            moveGuard(&tempMap, &guardCoords);
-        }
-        if (isLooping) {
-            causesGuardLoop.push_back(obstacleCoords);
         }
     }
 
-    int sum = causesGuardLoop.size();
-    cout << "Part 2 result: " << sum << endl;
-
-    return 0;
+    cout << "Part 2 result: " << loopCount << endl;
 }
 
 int main() {
     vector<string> input = readFile("/home/nikerl/Documents/Repos/advent-of-code/AOC2024/input/day06_input.txt");
     
     vector<coords> visitedCoords = part1(input);
-    part2(input, visitedCoords);
+    part2(input);
 }
