@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cmath>
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -103,6 +104,51 @@ int calculateSafetyFactor(vector<RobotVector> *robots) {
     return safetyFactor;
 }
 
+vector<string> createMap() {
+    vector<string> map;
+    for (int i = 0; i < MAP_Y_SIZE; i++) {
+        string row = "";
+        for (int j = 0; j < MAP_X_SIZE; j++) {
+            row.push_back('.');
+        }
+        map.push_back(row);
+    }
+    return map;
+}
+
+bool checkForTree(vector<string> map) {
+    bool treeFound = false;
+    for (int i = 0; i < map.at(0).size(); i++) {
+        for (int j = 0; j < map.size() - 10; j++) {
+            for (int k = j; k < j + 10; k++) {
+                if (map[k][i] != '#') {
+                    treeFound = false;
+                    break;
+                }
+                else {
+                    treeFound = true;
+                }
+            }
+            if (treeFound) return true;
+        }
+    }
+    return false;
+}
+
+bool isTree(vector<string> map, vector<RobotVector> robots, int seconds) {
+    for (RobotVector robot : robots) {
+        map.at(robot.y).at(robot.x) = '#';
+    }
+    if (checkForTree(map)) {
+        cout << "---------------------" << seconds << "---------------------" << endl;
+        for (string row : map) {
+            cout << row << endl;
+        }
+        return true;
+    }
+    return false;
+}
+
 
 int part1(vector<RobotVector> robots, int seconds) {
     for (int i = 0; i < seconds; i++) {
@@ -116,11 +162,27 @@ int part1(vector<RobotVector> robots, int seconds) {
     return 0;
 }
 
+int part2(vector<RobotVector> robots) {
+    vector<string> map = createMap();
+    int seconds = 1;
+    while(true) {
+        for (int j = 0; j < robots.size(); j++) {
+            moveRobot(&robots[j]);
+        }
+
+        if (isTree(map, robots, seconds)) break;
+        seconds++;
+    }
+
+    return 0;
+}
+
 int main() {
     vector<string> input = readFile("/home/nikerl/Documents/Repos/advent-of-code/AOC2024/input/day14_input.txt");
     vector<RobotVector> robots = parseInput(input);
     
     part1(robots, 100);
+    part2(robots);
 
     return 0;
 }
