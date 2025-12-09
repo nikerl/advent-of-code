@@ -30,49 +30,6 @@ func part1(diagram *[]string, coordsSeen *map[coord]bool, startCol int, startRow
 }
 
 
-
-/* func part2(diagram *[]string, startCol int) int {
-	var unexplored []coord = []coord{{x: startCol, y: 1}}
-	var count int = 0
-	var seen map[coord]int = map[coord]int{}
-
-	var lastSplit coord = coord{x: -1, y: -1}
-	for len(unexplored) > 0 {
-		var current coord = unexplored[len(unexplored)-1]
-		unexplored = unexplored[:len(unexplored)-1]
-		if seen[current] > 0 {
-			seen[current]++
-			continue
-		}
-		for {
-			if current.x < 0 || current.x >= len((*diagram)[0]) {
-				break
-			} else if current.y >= len(*diagram) {
-				count++
-				seen[lastSplit] = 1
-				break
-			} else {
-				if (*diagram)[current.y][current.x] == '^' {
-					lastSplit = current
-					if seen[current] > 0 {
-						seen[current]++
-					} else {
-						seen[current] = 1
-					}
-					unexplored = append(unexplored, coord{x: current.x + 1, y: current.y})
-					unexplored = append(unexplored, coord{x: current.x - 1, y: current.y})
-					break
-				} else {
-					current.y++
-				}
-			}
-		}
-	}
-
-	return count
-} */
-
-
 func countTimelines(diagram *[]string, x int, y int, memo *map[coord]int) int {
     // Out of bounds horizontally = 0 timelines
     if x < 0 || x >= len((*diagram)[0]) {
@@ -109,6 +66,7 @@ func part2(diagram *[]string, startCol int) int {
     memo := make(map[coord]int)
     return countTimelines(diagram, startCol, 1, &memo)
 }
+
 
 func findStart(diagram string) int {
 	var startIndex int = 0
