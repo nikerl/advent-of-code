@@ -6,6 +6,7 @@ A collection of my Advent of Code solutions over the years.
 
 | Year | Language | Stars |
 |------|----------|--------|
+| [**2021**](./AOC2021/) | Rust | ⭐ WIP |
 | [**2022**](./AOC2022/) | Java | ⭐ 26 / 50 |
 | [**2023**](./AOC2023/) | Java | ⭐ 20 / 50 |
 | [**2024**](./AOC2024/) | C++  | ⭐ 33 / 50 |
